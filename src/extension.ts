@@ -6,15 +6,15 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "D:/code/extensions/vs code/devrev/autoflow/.env" });
 const axios = require("axios").default;
 import { Configuration, OpenAIApi } from "openai";
+import * as vscode from "vscode";
+import { CodelensProvider } from "./CodeLensProvider";
+import { QueryGenerator } from "./QueryGenerator";
+import { NodeDependenciesProvider } from "./TreeView/nodeDependencies";
 var ncp = require("copy-paste");
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
-import { NodeDependenciesProvider } from "./TreeView/nodeDependencies";
-import * as vscode from "vscode";
-import { CodelensProvider } from "./CodeLensProvider";
-import { QueryGenerator } from "./QueryGenerator";
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -24,7 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const rootPath =
     vscode.workspace.workspaceFolders &&
-    vscode.workspace.workspaceFolders.length > 0
+      vscode.workspace.workspaceFolders.length > 0
       ? vscode.workspace.workspaceFolders[0].uri.fsPath
       : "";
 
@@ -46,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
-  
+
 
   let disposable = vscode.commands.registerCommand("autoflow.all", async () => {
     // The code you place here will be executed every time your command is executed
@@ -166,8 +166,16 @@ export function activate(context: vscode.ExtensionContext) {
           }, 9000);
 
           try {
+
+            const openedDoc = vscode.window.activeTextEditor;
+            const fileExtension = openedDoc?.document.fileName.split(".").pop();
+            
+            const codeContext = openedDoc?.document.getText();
+            console.log(`COde completion Context ${codeContext}`);
+
             const res = await axios.post(`http://127.0.0.1:8080/magic`, {
               prompt: prompt,
+              context: codeContext
             });
             console.log(res, res["data"]);
             if (res["data"]["status"] !== "ok") {
@@ -180,10 +188,23 @@ export function activate(context: vscode.ExtensionContext) {
               if (!insertionPoint) {
                 return;
               }
-              editText.insert(
-                insertionPoint,
-                `\n'''\n${res["data"]["output"]}\n'''\n`
-              );
+
+              const selectionStart = openedDoc?.selection.anchor;
+              openedDoc?.edit((editText) => {
+                if (fileExtension === "py") {
+                  editText.insert(
+                    selectionStart,
+                    `\n'''\n${res["data"]["output"]}\n'''\n`
+                  );
+                } else {
+                  editText.insert(
+                    selectionStart,
+                    `\n/*\n${res["data"]["output"]}\n*/\n`
+                  );
+                }
+              });
+
+
             });
           } catch (error) {
             console.log(error);
@@ -789,7 +810,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  
+
   let disposableRefine = vscode.commands.registerCommand(
     "autoflow.refine",
     async (...args: any[]) => {
@@ -1030,13 +1051,14 @@ export function activate(context: vscode.ExtensionContext) {
               progress.report({ increment: 15, message: "Prinitng Response" });
             }, 9000);
 
-            
-
+            const codeContext = openedDoc?.document.getText();
+            console.log(`COde completion Context ${codeContext}`);
             const res = await axios.post(
               `http://127.0.0.1:8080/complete_code`,
               {
                 code: prompt,
                 task: task,
+                context: codeContext
               }
             );
             console.log(res, res["data"]);
@@ -1087,10 +1109,10 @@ export function activate(context: vscode.ExtensionContext) {
       const selectionStart = openedDoc?.selection.anchor;
 
       /*const prompt = openedDoc?.document.getText(openedDoc.selection);
-			if (!prompt){
-				vscode.window.showErrorMessage('No Code Selected. Please Highlight Some Code..');
-				return;
-			}*/
+      if (!prompt){
+        vscode.window.showErrorMessage('No Code Selected. Please Highlight Some Code..');
+        return;
+      }*/
       const fileExtension = openedDoc?.document.fileName.split(".").pop();
       console.log("opened file is", fileExtension);
 
@@ -1399,13 +1421,13 @@ export function activate(context: vscode.ExtensionContext) {
     "autoflow.search",
     async () => {
       const userQuery = await vscode.window.showInputBox({
-        title:'What Do You Want to Search?'
+        title: 'What Do You Want to Search?'
       });
-      if (!userQuery){
+      if (!userQuery) {
         return;
       }
-     
-      
+
+
       vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
@@ -1440,31 +1462,30 @@ export function activate(context: vscode.ExtensionContext) {
               "*",
               "**​/node_modules/**"
             );
-            const codeList:any[] = [];
+            const codeList: any[] = [];
 
-            async function readFiles(){
+            async function readFiles() {
 
-              for(const element of allfiles){
-                let code:{[key:string]:string} = {};
+              for (const element of allfiles) {
+                let code: { [key: string]: string } = {};
                 console.log(element.fsPath);
                 code['fp'] = element.fsPath;
                 code['content'] = (await vscode.workspace.fs.readFile(element)).toString();
                 codeList.push(code);
               }
             }
-            
+
 
 
             await readFiles();
-            console.log('code list being sent to server',codeList);
+            console.log('code list being sent to server', codeList);
             const openedDoc = vscode.window.activeTextEditor;
             const fileExtension = openedDoc?.document.fileName.split(".").pop();
-
             const res = await axios.post(`http://127.0.0.1:8080/search-code`, {
               prompt: userQuery,
               recreate: true,
-              code:codeList,
-              language:fileExtension
+              code: codeList,
+              language: fileExtension
             });
             console.log(res["data"]);
             if (res["data"]["status"] !== "ok") {
@@ -1473,11 +1494,11 @@ export function activate(context: vscode.ExtensionContext) {
               );
               return;
             }
-
+            console.log(res["data"]["output"]);
             const com_chan = vscode.window.createOutputChannel('code-search');
             com_chan.append(res['data']['output']);
             com_chan.show();
-            
+
 
           } catch (error) {
             console.log(error);
@@ -1513,4 +1534,4 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }

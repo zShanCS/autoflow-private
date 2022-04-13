@@ -63,13 +63,12 @@ export class CodelensProvider implements vscode.CodeLensProvider {
             const res = await axios.post(`http://127.0.0.1:8080/intent`, {
               query: cleanedQuery,
             });
-            console.log(res);
             if (res["data"]["status"] !== "ok") {
               return null;
             }
             //generate lens from server intents;
             const intentList: Array<string> = res["data"]["output"];
-            console.log(cleanedQuery, intentList);
+            
             intentList.forEach((command) => {
               if (commandList.includes(command)) {
                 let lens = generateLens(command, range);
