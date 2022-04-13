@@ -326,6 +326,7 @@ export function activate(context: vscode.ExtensionContext) {
           }, 9000);
 
           try {
+            
             const res = await axios.post(`http://127.0.0.1:8080/fix_bugs`, {
               prompt: prompt,
               language: fileExtension,
@@ -410,10 +411,11 @@ export function activate(context: vscode.ExtensionContext) {
           }, 9000);
 
           try {
+
             const res = await axios.post(
               `http://127.0.0.1:8080/explain_error`,
               {
-                prompt: prompt,
+                prompt: prompt
               }
             );
             console.log(res, res["data"]);
@@ -922,9 +924,11 @@ export function activate(context: vscode.ExtensionContext) {
           }, 9000);
 
           try {
+            
+
             const res = await axios.post(`http://127.0.0.1:8080/code2ut`, {
               prompt: prompt,
-              language: fileExtension,
+              language: fileExtension
             });
             console.log(res, res["data"]);
             if (res["data"]["status"] !== "ok") {
@@ -1025,6 +1029,8 @@ export function activate(context: vscode.ExtensionContext) {
             setTimeout(() => {
               progress.report({ increment: 15, message: "Prinitng Response" });
             }, 9000);
+
+            
 
             const res = await axios.post(
               `http://127.0.0.1:8080/complete_code`,
@@ -1451,10 +1457,14 @@ export function activate(context: vscode.ExtensionContext) {
 
             await readFiles();
             console.log('code list being sent to server',codeList);
+            const openedDoc = vscode.window.activeTextEditor;
+            const fileExtension = openedDoc?.document.fileName.split(".").pop();
+
             const res = await axios.post(`http://127.0.0.1:8080/search-code`, {
               prompt: userQuery,
               recreate: true,
-              code:codeList
+              code:codeList,
+              language:fileExtension
             });
             console.log(res["data"]);
             if (res["data"]["status"] !== "ok") {
