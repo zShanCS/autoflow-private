@@ -1,0 +1,180 @@
+{
+  "name": "autoflow",
+  "displayName": "autoflow",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.65.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:autoflow.sayhi",
+    "onCommand:autoflow.flow",
+    "onView:nodeDependencies",
+    "*"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsWelcome": [
+      {
+        "view": "nodeDependencies",
+        "contents": " [Add Dependency](command:nodeDependencies.addEntry)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "package-explorer",
+          "title": "Package Explorer",
+          "icon": "./media/developer.png"
+        }
+      ]
+    },
+    "views": {
+      "package-explorer": [
+        {
+          "id": "nodeDependencies",
+          "name": "Trello",
+          "icon": "./media/developer.png",
+          "contextualTitle": "Package Explorer"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "nodeDependencies.refreshEntry",
+          "when": "view == nodeDependencies",
+          "group": "navigation"
+        },
+        {
+          "command": "nodeDependencies.addEntry",
+          "when": "view == nodeDependencies"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "nodeDependencies.addEntry",
+        "title": "Add"
+      },
+      {
+        "command": "autoflow.search",
+        "title": "Autoflow:Search"
+      },
+      {
+        "command": "autoflow.all",
+        "title": "Autoflow:All Commands"
+      },
+      {
+        "command": "autoflow.flow",
+        "title": "Autoflow: Flow"
+      },
+      {
+        "command": "autoflow.code2nl",
+        "title": "Autoflow: Code To Natural Language"
+      },
+      {
+        "command": "autoflow.fix_bugs",
+        "title": "Autoflow: Fix Bugs In Code"
+      },
+      {
+        "command": "autoflow.explain_error",
+        "title": "Autoflow: Explain Error"
+      },
+      {
+        "command": "autoflow.sql2nl",
+        "title": "Autoflow: Explain SQL Query"
+      },
+      {
+        "command": "autoflow.oneliner",
+        "title": "Autoflow: Make One Liner"
+      },
+      {
+        "command": "autoflow.docstring",
+        "title": "Autoflow: Make Doc STring"
+      },
+      {
+        "command": "autoflow.unit_test",
+        "title": "Autoflow: Make Unit Test"
+      },
+      {
+        "command": "autoflow.complete_code",
+        "title": "Autoflow: Code Completion"
+      },
+      {
+        "command": "autoflow.nl2sql",
+        "title": "Autoflow: Generate SQL Query"
+      },
+      {
+        "command": "autoflow.api_req",
+        "title": "Autoflow: API Request"
+      },
+      {
+        "command": "autoflow.recc_commit",
+        "title": "Autoflow: Reccommind Commit"
+      },
+      {
+        "command": "autoflow.detect_defect",
+        "title": "Autoflow: Detect Defect In Code"
+      },
+      {
+        "command": "autoflow.refine",
+        "title": "Autoflow: Fix/Refine Code"
+      },
+      {
+        "command": "nodeDependencies.refreshEntry",
+        "title": "Refresh",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      }
+    ],
+    "configuration": {
+      "properties": {
+        "autoflow.enableCodeLens": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "autoflow.all",
+        "key": "ctrl+f1",
+        "mac": "cmd+f1",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.2.0",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "14.x",
+    "@types/vscode": "^1.65.0",
+    "@typescript-eslint/eslint-plugin": "^5.12.1",
+    "@typescript-eslint/parser": "^5.12.1",
+    "@vscode/test-electron": "^2.1.2",
+    "eslint": "^8.9.0",
+    "glob": "^7.2.0",
+    "mocha": "^9.2.1",
+    "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "axios": "^0.26.1",
+    "copy-paste": "^1.3.0",
+    "dotenv": "^16.0.0",
+    "openai": "^2.0.5"
+  }
+}
