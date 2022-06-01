@@ -60,15 +60,15 @@ export class CodelensProvider implements vscode.CodeLensProvider {
         if (range && (userQuery.startsWith("#:") || userQuery.startsWith("//:")) ) {
           const cleanedQuery = userQuery.replace(':', '');
           try {
-            const res = await axios.post(`http://127.0.0.1:8080/intent`, {
-              query: cleanedQuery,
-            });
-            if (res["data"]["status"] !== "ok") {
-              return null;
-            }
-            //generate lens from server intents;
-            const intentList: Array<string> = res["data"]["output"];
-            
+            // const res = await axios.post(`http://127.0.0.1:8080/intent`, {
+            //   query: cleanedQuery,
+            // });
+            // if (res["data"]["status"] !== "ok") {
+            //   return null;
+            // }
+            // //generate lens from server intents;
+            // const intentList: Array<string> = res["data"]["output"];
+            const intentList = ['get_oneliner','complete_code'];
             intentList.forEach((command) => {
               if (commandList.includes(command)) {
                 let lens = generateLens(command, range);
@@ -86,7 +86,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
           if (!someCodeLensGenerated) {
             this.codeLenses.push(
               new vscode.CodeLens(range, {
-                title: "AutoFlow Magic",
+                title: "Code Generation",
                 command: "autoflow.flow",
                 tooltip: "Let Autoflow take your prompt and show you best result.",
                 arguments: [
@@ -98,13 +98,28 @@ export class CodelensProvider implements vscode.CodeLensProvider {
           }
 
             //show more button that shows all commands.
+          // this.codeLenses.push(
+          //   new vscode.CodeLens(range, {
+          //     title: "More",
+          //     command: "autoflow.all",
+          //     tooltip: "Show All Possible Commands"
+          //   })
+          // );
           this.codeLenses.push(
             new vscode.CodeLens(range, {
-              title: "More",
-              command: "autoflow.all",
-              tooltip: "Show All Possible Commands"
+              title: "Code Generation",
+              command: "autoflow.flow",
+              tooltip: "Generate Code"
             })
           );
+          this.codeLenses.push(
+            new vscode.CodeLens(range, {
+              title: "Code Search",
+              command: "autoflow.search",
+              tooltip: "Search CodeBase"
+            })
+          );
+          
 
         }
       }
@@ -171,7 +186,7 @@ function generateLens(command: string, range: vscode.Range) {
     }
     case "get_oneliner": {
       return new vscode.CodeLens(range, {
-        title: "Generate One Line Code",
+        title: "Code Summarization",
         command: "autoflow.oneliner",
         tooltip: "Generate One Line Alternative",
         arguments: [range],
